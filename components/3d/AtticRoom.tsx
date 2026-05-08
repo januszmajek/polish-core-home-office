@@ -6,7 +6,7 @@ import * as THREE from "three";
 // Room dimensions based on reference images
 const ROOM_WIDTH = 8;
 const ROOM_DEPTH = 6;
-const WALL_HEIGHT = 2.4;
+const WALL_HEIGHT = 1.4; // Lower walls to show furniture clearly
 const CEILING_PEAK = 3.2;
 const SKYLIGHT_WIDTH = 3;
 const SKYLIGHT_HEIGHT = 1.5;
