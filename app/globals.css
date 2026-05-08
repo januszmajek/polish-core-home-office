@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  /* Retro Polish Attic Color Palette */
+  --background: #1a1a1a;
+  --foreground: #e8e8e8;
+  
+  /* Windows 98/2000 UI Colors */
+  --win-bg: #c0c0c0;
+  --win-dark: #808080;
+  --win-light: #ffffff;
+  --win-darker: #404040;
+  --win-title: #000080;
+  --win-title-inactive: #808080;
+  
+  /* Room Colors */
+  --wall-mustard: #d4a84b;
+  --ceiling-cream: #f5f0e6;
+  --floor-oak: #c4a574;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow: hidden;
+  height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: "MS Sans Serif", "Segoe UI", Tahoma, sans-serif;
+}
+
+/* Windows 98 Style Classes */
+.win-button {
+  background: var(--win-bg);
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-darker) var(--win-darker) var(--win-light);
+  padding: 4px 16px;
+  font-family: "MS Sans Serif", Tahoma, sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  min-width: 75px;
+}
+
+.win-button:active {
+  border-color: var(--win-darker) var(--win-light) var(--win-light) var(--win-darker);
+}
+
+.win-inset {
+  border: 2px solid;
+  border-color: var(--win-dark) var(--win-light) var(--win-light) var(--win-dark);
+  background: white;
+}
+
+.win-outset {
+  border: 2px solid;
+  border-color: var(--win-light) var(--win-darker) var(--win-darker) var(--win-light);
+  background: var(--win-bg);
+}
+
+/* Pixel-perfect rendering */
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
