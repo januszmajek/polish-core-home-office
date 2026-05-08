@@ -66,12 +66,14 @@ interface AppState {
   isTransitioning: boolean;
   showPortfolio: boolean;
   portfolioSection: "about" | "projects" | "experience";
-  
+  freeCamera: boolean;
+
   setZone: (zone: InteractionZone) => void;
   setTransitioning: (value: boolean) => void;
   togglePortfolio: () => void;
   setPortfolioSection: (section: "about" | "projects" | "experience") => void;
   closePortfolio: () => void;
+  toggleFreeCamera: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -79,10 +81,12 @@ export const useAppStore = create<AppState>((set) => ({
   isTransitioning: false,
   showPortfolio: false,
   portfolioSection: "about",
-  
-  setZone: (zone) => set({ currentZone: zone, isTransitioning: true }),
+  freeCamera: false,
+
+  setZone: (zone) => set({ currentZone: zone, isTransitioning: true, freeCamera: false }),
   setTransitioning: (value) => set({ isTransitioning: value }),
   togglePortfolio: () => set((state) => ({ showPortfolio: !state.showPortfolio })),
   setPortfolioSection: (section) => set({ portfolioSection: section }),
   closePortfolio: () => set({ showPortfolio: false }),
+  toggleFreeCamera: () => set((state) => ({ freeCamera: !state.freeCamera, isTransitioning: false })),
 }));
