@@ -18,38 +18,38 @@ export interface CameraPosition {
 
 export const CAMERA_POSITIONS: Record<InteractionZone, CameraPosition> = {
   overview: {
-    position: [0, 1.6, 4],
-    target: [0, 1, 0],
+    position: [0, 1.4, 2.5],
+    target: [0, 0.8, 0],
     fov: 60,
   },
   monitor: {
-    position: [-1.2, 1.4, 0.5],
-    target: [-1.8, 1.2, -1],
-    fov: 50,
+    position: [-0.6, 1.2, 0.3],
+    target: [-0.8, 0.75, -1.8],
+    fov: 45,
   },
   "desk-left": {
-    position: [-2, 1.6, 1],
-    target: [-2.5, 1, -1],
+    position: [-1.5, 1.3, 0.8],
+    target: [-1.2, 0.75, -0.8],
     fov: 55,
   },
   "desk-right": {
-    position: [1.5, 1.6, 1],
-    target: [2, 1, -1],
+    position: [0.8, 1.3, 0.8],
+    target: [0.4, 0.75, -0.8],
     fov: 55,
   },
   bookshelf: {
-    position: [2.5, 1.5, 2],
-    target: [3.5, 1.2, 0],
+    position: [2.2, 1.2, 1.5],
+    target: [2.0, 0.8, -0.5],
     fov: 50,
   },
   sofa: {
-    position: [-1, 1.4, 2],
-    target: [-2.5, 0.8, -0.5],
+    position: [-1.5, 1.2, 1.8],
+    target: [-1.8, 0.6, 1.2],
     fov: 55,
   },
   door: {
-    position: [0, 1.6, 2],
-    target: [1, 1.4, -2],
+    position: [0.5, 1.3, 1.8],
+    target: [1.2, 1, 1.95],
     fov: 55,
   },
 };

@@ -4,141 +4,56 @@ import { useRef, useMemo } from "react";
 import * as THREE from "three";
 import { useAppStore } from "@/lib/store";
 
-// Desk component - long L-shaped desk along the wall
+// Desk component - proportioned for human scale
 export function Desk() {
-  const woodColor = useMemo(() => new THREE.Color("#c4a06a"), []);
-  
+  const woodColor = useMemo(() => new THREE.Color("#a68f6f"), []);
+
   return (
-    <group position={[0, 0, -2.5]}>
-      {/* Main desk surface */}
+    <group position={[-0.5, 0, -1.5]}>
+      {/* Main desk surface - real desk size */}
       <mesh position={[0, 0.75, 0]} castShadow receiveShadow>
-        <boxGeometry args={[6, 0.04, 0.8]} />
-        <meshStandardMaterial color={woodColor} />
+        <boxGeometry args={[1.6, 0.04, 0.7]} />
+        <meshStandardMaterial
+          color={woodColor}
+          roughness={0.6}
+          metalness={0.05}
+        />
       </mesh>
-      
-      {/* Desk legs / cabinets */}
-      <DeskCabinet position={[-2.5, 0.375, 0]} />
-      <DeskCabinet position={[0, 0.375, 0]} />
-      <DeskCabinet position={[2.5, 0.375, 0]} />
-      
-      {/* Items on desk */}
-      <DeskItems />
+
+      {/* Desk legs with proper thickness */}
+      <DeskLeg position={[-0.7, 0.375, -0.3]} />
+      <DeskLeg position={[0.7, 0.375, -0.3]} />
+      <DeskLeg position={[-0.7, 0.375, 0.25]} />
+      <DeskLeg position={[0.7, 0.375, 0.25]} />
     </group>
   );
 }
 
-function DeskCabinet({ position }: { position: [number, number, number] }) {
-  const cabinetColor = "#b8946a";
-  
-  return (
-    <group position={position}>
-      <mesh castShadow>
-        <boxGeometry args={[0.6, 0.75, 0.7]} />
-        <meshStandardMaterial color={cabinetColor} />
-      </mesh>
-      {/* Cabinet door lines */}
-      <mesh position={[0, 0, 0.351]}>
-        <planeGeometry args={[0.5, 0.6]} />
-        <meshStandardMaterial color="#a8845a" />
-      </mesh>
-    </group>
-  );
-}
-
-function DeskItems() {
-  return (
-    <group position={[0, 0.77, 0]}>
-      {/* Books stack */}
-      <BookStack position={[-2.2, 0, 0.1]} />
-      
-      {/* Boxes and supplies */}
-      <Box position={[1, 0.1, 0.1]} size={[0.3, 0.2, 0.25]} color="#d42c2c" />
-      <Box position={[1.5, 0.08, 0.1]} size={[0.25, 0.16, 0.2]} color="#ffffff" />
-      
-      {/* CD/tape holder */}
-      <CdHolder position={[2, 0.15, 0]} />
-      
-      {/* Papers and magazines */}
-      <Papers position={[0.2, 0, 0.15]} />
-    </group>
-  );
-}
-
-function BookStack({ position }: { position: [number, number, number] }) {
-  const bookColors = ["#2c4a7c", "#8b4513", "#2d5a3d", "#6b2c2c", "#4a4a6a"];
-  
-  return (
-    <group position={position}>
-      {bookColors.map((color, i) => (
-        <mesh key={i} position={[0, i * 0.04 + 0.02, 0]} castShadow>
-          <boxGeometry args={[0.25, 0.04, 0.18]} />
-          <meshStandardMaterial color={color} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function Box({ position, size, color }: { 
-  position: [number, number, number]; 
-  size: [number, number, number];
-  color: string;
-}) {
+function DeskLeg({ position }: { position: [number, number, number] }) {
   return (
     <mesh position={position} castShadow>
-      <boxGeometry args={size} />
-      <meshStandardMaterial color={color} />
+      <boxGeometry args={[0.05, 0.75, 0.04]} />
+      <meshStandardMaterial color="#8b7355" roughness={0.7} metalness={0} />
     </mesh>
   );
 }
 
-function CdHolder({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      {/* Orange CD spindle */}
-      <mesh castShadow>
-        <cylinderGeometry args={[0.12, 0.12, 0.3, 16]} />
-        <meshStandardMaterial color="#ff8c00" />
-      </mesh>
-      {/* CDs */}
-      {[0, 1, 2].map((i) => (
-        <mesh key={i} position={[0, -0.1 + i * 0.03, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.02, 0.11, 16]} />
-          <meshStandardMaterial color="#c0c0c0" metalness={0.8} roughness={0.2} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function Papers({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      {/* Magazine/papers stack */}
-      <mesh position={[0, 0.01, 0]} rotation={[0, 0.1, 0]} castShadow>
-        <boxGeometry args={[0.3, 0.02, 0.22]} />
-        <meshStandardMaterial color="#f0f0f0" />
-      </mesh>
-      <mesh position={[0.05, 0.025, 0]} rotation={[0, -0.05, 0]} castShadow>
-        <boxGeometry args={[0.28, 0.01, 0.2]} />
-        <meshStandardMaterial color="#e8e8e8" />
-      </mesh>
-    </group>
-  );
-}
-
-// Office Chair
-export function OfficeChair({ position, rotation = 0 }: { 
+// Office Chair - human-scale
+export function OfficeChair({
+  position,
+  rotation = 0,
+}: {
   position: [number, number, number];
   rotation?: number;
 }) {
   const setZone = useAppStore((state) => state.setZone);
   const chairRef = useRef<THREE.Group>(null);
-  
+  const fabricColor = "#1a1a2e";
+
   return (
-    <group 
-      ref={chairRef} 
-      position={position} 
+    <group
+      ref={chairRef}
+      position={position}
       rotation={[0, rotation, 0]}
       onClick={(e) => {
         e.stopPropagation();
@@ -149,50 +64,71 @@ export function OfficeChair({ position, rotation = 0 }: {
         }
       }}
     >
-      {/* Seat */}
-      <mesh position={[0, 0.45, 0]} castShadow>
-        <boxGeometry args={[0.45, 0.08, 0.45]} />
-        <meshStandardMaterial color="#1a1a2e" />
+      {/* Seat cushion */}
+      <mesh position={[0, 0.45, 0.1]} castShadow>
+        <boxGeometry args={[0.5, 0.12, 0.5]} />
+        <meshStandardMaterial
+          color={fabricColor}
+          roughness={0.8}
+          metalness={0}
+        />
       </mesh>
-      
+
       {/* Back rest */}
-      <mesh position={[0, 0.8, -0.18]} castShadow>
-        <boxGeometry args={[0.42, 0.6, 0.08]} />
-        <meshStandardMaterial color="#1a1a2e" />
+      <mesh position={[0, 0.75, -0.15]} castShadow>
+        <boxGeometry args={[0.48, 0.5, 0.08]} />
+        <meshStandardMaterial
+          color={fabricColor}
+          roughness={0.8}
+          metalness={0}
+        />
       </mesh>
-      
-      {/* Arm rests */}
-      <mesh position={[-0.22, 0.6, 0]} castShadow>
-        <boxGeometry args={[0.04, 0.2, 0.35]} />
-        <meshStandardMaterial color="#1a1a2e" />
+
+      {/* Armrests */}
+      <mesh position={[-0.27, 0.55, 0.1]} castShadow>
+        <boxGeometry args={[0.05, 0.25, 0.45]} />
+        <meshStandardMaterial
+          color={fabricColor}
+          roughness={0.8}
+          metalness={0}
+        />
       </mesh>
-      <mesh position={[0.22, 0.6, 0]} castShadow>
-        <boxGeometry args={[0.04, 0.2, 0.35]} />
-        <meshStandardMaterial color="#1a1a2e" />
+      <mesh position={[0.27, 0.55, 0.1]} castShadow>
+        <boxGeometry args={[0.05, 0.25, 0.45]} />
+        <meshStandardMaterial
+          color={fabricColor}
+          roughness={0.8}
+          metalness={0}
+        />
       </mesh>
-      
-      {/* Base */}
-      <mesh position={[0, 0.2, 0]}>
-        <cylinderGeometry args={[0.03, 0.03, 0.3, 8]} />
-        <meshStandardMaterial color="#333333" metalness={0.5} />
+
+      {/* Base cylinder */}
+      <mesh position={[0, 0.15, 0]}>
+        <cylinderGeometry args={[0.035, 0.035, 0.3, 16]} />
+        <meshStandardMaterial color="#3a3a3a" roughness={0.5} metalness={0.3} />
       </mesh>
-      
-      {/* Wheels base */}
-      <mesh position={[0, 0.05, 0]}>
-        <cylinderGeometry args={[0.25, 0.25, 0.02, 5]} />
-        <meshStandardMaterial color="#333333" />
+
+      {/* Wheel base */}
+      <mesh position={[0, 0.08, 0]}>
+        <cylinderGeometry args={[0.28, 0.28, 0.02, 8]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.6} metalness={0.2} />
       </mesh>
-      
+
       {/* Wheels */}
       {[0, 1, 2, 3, 4].map((i) => {
         const angle = (i / 5) * Math.PI * 2;
         return (
-          <mesh 
-            key={i} 
-            position={[Math.cos(angle) * 0.22, 0.03, Math.sin(angle) * 0.22]}
+          <mesh
+            key={i}
+            position={[Math.cos(angle) * 0.25, 0.04, Math.sin(angle) * 0.25]}
+            castShadow
           >
-            <sphereGeometry args={[0.03, 8, 8]} />
-            <meshStandardMaterial color="#222222" />
+            <sphereGeometry args={[0.035, 16, 16]} />
+            <meshStandardMaterial
+              color="#2a2a2a"
+              roughness={0.5}
+              metalness={0.4}
+            />
           </mesh>
         );
       })}
@@ -200,172 +136,220 @@ export function OfficeChair({ position, rotation = 0 }: {
   );
 }
 
-// CRT Monitor (interactive)
+// CRT Monitor - scaled appropriately
 export function CrtMonitor({ position }: { position: [number, number, number] }) {
   const { setZone, togglePortfolio, showPortfolio } = useAppStore();
   const monitorRef = useRef<THREE.Group>(null);
-  
+
   return (
-    <group 
-      ref={monitorRef} 
-      position={position}
-      onClick={(e) => {
-        e.stopPropagation();
-        setZone("monitor");
-        // Small delay to let camera transition before showing portfolio
-        setTimeout(() => togglePortfolio(), 500);
-      }}
-    >
-      {/* Monitor body */}
-      <mesh position={[0, 0.22, 0]} castShadow>
-        <boxGeometry args={[0.45, 0.38, 0.4]} />
-        <meshStandardMaterial color="#c8c8c8" />
+    <group ref={monitorRef} position={position}>
+      {/* Monitor body/bezel */}
+      <mesh position={[0, 0.2, 0]} castShadow>
+        <boxGeometry args={[0.45, 0.35, 0.2]} />
+        <meshStandardMaterial
+          color="#c0c0c0"
+          roughness={0.3}
+          metalness={0.6}
+        />
       </mesh>
-      
-      {/* Screen bezel */}
-      <mesh position={[0, 0.24, 0.18]}>
-        <boxGeometry args={[0.38, 0.3, 0.05]} />
-        <meshStandardMaterial color="#2a2a2a" />
+
+      {/* Screen area */}
+      <mesh
+        position={[0, 0.2, 0.105]}
+        onClick={(e) => {
+          e.stopPropagation();
+          setZone("monitor");
+          setTimeout(() => togglePortfolio(), 500);
+        }}
+      >
+        <planeGeometry args={[0.36, 0.27]} />
+        <meshBasicMaterial
+          color={showPortfolio ? "#000080" : "#1a1a3a"}
+        />
       </mesh>
-      
-      {/* Screen */}
-      <mesh position={[0, 0.24, 0.205]}>
-        <planeGeometry args={[0.32, 0.24]} />
-        <meshBasicMaterial color={showPortfolio ? "#000080" : "#000040"} />
-      </mesh>
-      
-      {/* Screen glow effect when active */}
-      {showPortfolio && (
-        <pointLight position={[0, 0.24, 0.3]} intensity={0.1} color="#4040ff" distance={0.5} />
-      )}
-      
+
       {/* Monitor stand */}
-      <mesh position={[0, 0.02, 0.05]}>
-        <boxGeometry args={[0.2, 0.04, 0.25]} />
-        <meshStandardMaterial color="#a0a0a0" />
+      <mesh position={[0, 0.05, 0.08]} castShadow>
+        <boxGeometry args={[0.25, 0.08, 0.2]} />
+        <meshStandardMaterial
+          color="#9a9a9a"
+          roughness={0.5}
+          metalness={0.2}
+        />
       </mesh>
-      
-      {/* Power LED */}
-      <mesh position={[0.15, 0.08, 0.2]}>
-        <sphereGeometry args={[0.008, 8, 8]} />
-        <meshBasicMaterial color="#00ff00" />
-      </mesh>
+
+      {/* Power LED indicator */}
+      {!showPortfolio && (
+        <mesh position={[0.18, 0.08, 0.11]} castShadow>
+          <sphereGeometry args={[0.008, 8, 8]} />
+          <meshBasicMaterial color="#00cc00" />
+        </mesh>
+      )}
     </group>
   );
 }
 
-// Sofa/couch
+// Sofa/Bed Platform - comfortable attic furniture
 export function Sofa({ position }: { position: [number, number, number] }) {
   const setZone = useAppStore((state) => state.setZone);
   const fabricColor = "#5c3a2e";
-  const stripeColor = "#4a2e24";
-  
+
   return (
-    <group 
+    <group
       position={position}
       onClick={(e) => {
         e.stopPropagation();
         setZone("sofa");
       }}
     >
-      {/* Seat base */}
-      <mesh position={[0, 0.25, 0]} castShadow>
-        <boxGeometry args={[1.4, 0.2, 0.6]} />
-        <meshStandardMaterial color={fabricColor} />
+      {/* Base platform */}
+      <mesh position={[0, 0.3, 0]} castShadow receiveShadow>
+        <boxGeometry args={[1.2, 0.05, 0.6]} />
+        <meshStandardMaterial
+          color="#8b6f47"
+          roughness={0.7}
+          metalness={0}
+        />
       </mesh>
-      
+
+      {/* Seat cushion */}
+      <mesh position={[0, 0.42, 0]} castShadow>
+        <boxGeometry args={[1.2, 0.25, 0.6]} />
+        <meshStandardMaterial
+          color={fabricColor}
+          roughness={0.8}
+          metalness={0}
+        />
+      </mesh>
+
       {/* Back rest */}
-      <mesh position={[0, 0.55, -0.25]} castShadow>
-        <boxGeometry args={[1.4, 0.5, 0.15]} />
-        <meshStandardMaterial color={fabricColor} />
+      <mesh position={[0, 0.75, -0.25]} castShadow>
+        <boxGeometry args={[1.2, 0.4, 0.12]} />
+        <meshStandardMaterial
+          color={fabricColor}
+          roughness={0.8}
+          metalness={0}
+        />
       </mesh>
-      
-      {/* Arm rests */}
-      <mesh position={[-0.65, 0.4, 0]} castShadow>
-        <boxGeometry args={[0.12, 0.3, 0.6]} />
-        <meshStandardMaterial color={stripeColor} />
+
+      {/* Side armrest left */}
+      <mesh position={[-0.6, 0.55, 0]} castShadow>
+        <boxGeometry args={[0.1, 0.25, 0.6]} />
+        <meshStandardMaterial
+          color="#4a2e24"
+          roughness={0.8}
+          metalness={0}
+        />
       </mesh>
-      <mesh position={[0.65, 0.4, 0]} castShadow>
-        <boxGeometry args={[0.12, 0.3, 0.6]} />
-        <meshStandardMaterial color={stripeColor} />
-      </mesh>
-      
-      {/* Wooden frame visible at bottom */}
-      <mesh position={[0, 0.08, 0]}>
-        <boxGeometry args={[1.3, 0.08, 0.55]} />
-        <meshStandardMaterial color="#5a4030" />
-      </mesh>
-      
-      {/* Decorative cushion/fur */}
-      <mesh position={[0.2, 0.38, 0.1]} rotation={[0.1, 0.2, 0]} castShadow>
-        <boxGeometry args={[0.5, 0.06, 0.35]} />
-        <meshStandardMaterial color="#7a7a70" />
+
+      {/* Side armrest right */}
+      <mesh position={[0.6, 0.55, 0]} castShadow>
+        <boxGeometry args={[0.1, 0.25, 0.6]} />
+        <meshStandardMaterial
+          color="#4a2e24"
+          roughness={0.8}
+          metalness={0}
+        />
       </mesh>
     </group>
   );
 }
 
-// Bookshelf/cabinet
+// Bookshelf/Storage Cabinet
 export function Bookshelf({ position }: { position: [number, number, number] }) {
   const setZone = useAppStore((state) => state.setZone);
   const woodColor = "#3a2820";
-  
+
   return (
-    <group 
+    <group
       position={position}
       onClick={(e) => {
         e.stopPropagation();
         setZone("bookshelf");
       }}
     >
-      {/* Main cabinet frame */}
-      <mesh position={[0, 0.9, 0]} castShadow>
-        <boxGeometry args={[0.9, 1.8, 0.4]} />
-        <meshStandardMaterial color={woodColor} />
+      {/* Main cabinet body */}
+      <mesh position={[0, 0.8, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.8, 1.6, 0.3]} />
+        <meshStandardMaterial color={woodColor} roughness={0.7} metalness={0} />
       </mesh>
-      
-      {/* Shelves (lighter interior) */}
-      {[0.3, 0.7, 1.1, 1.5].map((y, i) => (
-        <mesh key={i} position={[0, y, 0.02]}>
-          <boxGeometry args={[0.82, 0.02, 0.35]} />
-          <meshStandardMaterial color="#4a3830" />
+
+      {/* Shelves */}
+      {[0.2, 0.55, 0.9, 1.25].map((y, i) => (
+        <mesh key={i} position={[0, y, 0.01]} receiveShadow>
+          <boxGeometry args={[0.75, 0.03, 0.28]} />
+          <meshStandardMaterial
+            color="#2a1810"
+            roughness={0.8}
+            metalness={0}
+          />
         </mesh>
       ))}
-      
-      {/* Books on shelves */}
-      <BookRow position={[-0.2, 1.3, 0.05]} count={5} />
-      <BookRow position={[0.1, 0.9, 0.05]} count={4} />
-      
-      {/* Decorative items */}
-      <mesh position={[0.25, 0.5, 0.1]} castShadow>
-        <boxGeometry args={[0.15, 0.2, 0.12]} />
-        <meshStandardMaterial color="#8b0000" />
-      </mesh>
+
+      {/* Books on shelves - visible books for content */}
+      <BookStack position={[-0.2, 1.1, 0.08]} orientation="vertical" count={3} />
+      <BookStack position={[0.1, 1.1, 0.08]} orientation="vertical" count={4} />
+      <BookStack position={[-0.25, 0.65, 0.08]} orientation="vertical" count={5} />
     </group>
   );
 }
 
-function BookRow({ position, count }: { position: [number, number, number]; count: number }) {
-  const colors = ["#8b4513", "#2c4a7c", "#2d5a3d", "#6b2c2c", "#4a4a6a", "#1a1a4a"];
-  
+function BookStack({
+  position,
+  orientation,
+  count,
+}: {
+  position: [number, number, number];
+  orientation: "horizontal" | "vertical";
+  count: number;
+}) {
+  const bookColors = [
+    "#8b4513",
+    "#2c4a7c",
+    "#2d5a3d",
+    "#6b2c2c",
+    "#4a4a6a",
+    "#1a1a4a",
+  ];
+
   return (
     <group position={position}>
-      {Array.from({ length: count }).map((_, i) => (
-        <mesh key={i} position={[i * 0.08, 0.1, 0]} castShadow>
-          <boxGeometry args={[0.06, 0.2 + Math.random() * 0.05, 0.15]} />
-          <meshStandardMaterial color={colors[i % colors.length]} />
-        </mesh>
-      ))}
+      {Array.from({ length: count }).map((_, i) => {
+        const offset =
+          orientation === "vertical"
+            ? [i * 0.045, 0, 0]
+            : [0, 0, i * 0.03];
+        const dimensions =
+          orientation === "vertical"
+            ? [0.04, 0.22, 0.12]
+            : [0.04, 0.18, 0.12];
+
+        return (
+          <mesh
+            key={i}
+            position={offset as [number, number, number]}
+            castShadow
+          >
+            <boxGeometry args={dimensions as [number, number, number]} />
+            <meshStandardMaterial
+              color={bookColors[i % bookColors.length]}
+              roughness={0.6}
+              metalness={0}
+            />
+          </mesh>
+        );
+      })}
     </group>
   );
 }
 
-// Wooden Door
+// Wooden Door with frame
 export function Door({ position }: { position: [number, number, number] }) {
   const setZone = useAppStore((state) => state.setZone);
-  
+  const doorWoodColor = "#8b5a3c";
+
   return (
-    <group 
+    <group
       position={position}
       onClick={(e) => {
         e.stopPropagation();
@@ -373,51 +357,91 @@ export function Door({ position }: { position: [number, number, number] }) {
       }}
     >
       {/* Door frame */}
-      <mesh position={[0, 1, 0]} castShadow>
-        <boxGeometry args={[0.8, 2, 0.1]} />
-        <meshStandardMaterial color="#8b5a2b" />
+      <mesh position={[0, 0.9, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.08, 1.8, 0.08]} />
+        <meshStandardMaterial
+          color="#7a4a2b"
+          roughness={0.7}
+          metalness={0}
+        />
       </mesh>
-      
-      {/* Door panels */}
-      <mesh position={[0, 1.4, 0.051]}>
-        <boxGeometry args={[0.6, 0.5, 0.02]} />
-        <meshStandardMaterial color="#7a4a22" />
+
+      {/* Door leaf */}
+      <mesh position={[0.04, 0.9, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.7, 1.8, 0.04]} />
+        <meshStandardMaterial
+          color={doorWoodColor}
+          roughness={0.6}
+          metalness={0}
+        />
       </mesh>
-      <mesh position={[0, 0.6, 0.051]}>
-        <boxGeometry args={[0.6, 0.7, 0.02]} />
-        <meshStandardMaterial color="#7a4a22" />
+
+      {/* Door panels detail */}
+      {[0.4, 0.1].map((y, i) => (
+        <mesh key={i} position={[0.05, y + 0.9, 0.022]}>
+          <planeGeometry args={[0.6, 0.35]} />
+          <meshStandardMaterial
+            color="#7a4a2b"
+            roughness={0.7}
+            metalness={0}
+          />
+        </mesh>
+      ))}
+
+      {/* Glass panel in upper door */}
+      <mesh position={[0.05, 1.4, 0.025]}>
+        <planeGeometry args={[0.3, 0.3]} />
+        <meshStandardMaterial
+          color="#a8c5d8"
+          transparent
+          opacity={0.5}
+          roughness={0.1}
+          metalness={0}
+        />
       </mesh>
-      
-      {/* Door window (frosted glass) */}
-      <mesh position={[0, 1.4, 0.055]}>
-        <planeGeometry args={[0.3, 0.35]} />
-        <meshStandardMaterial color="#a0b0c0" transparent opacity={0.6} />
-      </mesh>
-      
+
       {/* Door handle */}
-      <mesh position={[0.3, 1, 0.06]}>
-        <sphereGeometry args={[0.03, 8, 8]} />
-        <meshStandardMaterial color="#c0a060" metalness={0.8} roughness={0.3} />
+      <mesh position={[0.08, 0.9, -0.02]} castShadow>
+        <sphereGeometry args={[0.025, 12, 12]} />
+        <meshStandardMaterial
+          color="#b8860b"
+          roughness={0.4}
+          metalness={0.7}
+        />
       </mesh>
     </group>
   );
 }
 
-// Keyboard on desk
+// CRT Monitor Screen (can display content)
 export function Keyboard({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
+      {/* Main keyboard body */}
       <mesh castShadow>
-        <boxGeometry args={[0.35, 0.02, 0.12]} />
-        <meshStandardMaterial color="#d0d0d0" />
+        <boxGeometry args={[0.32, 0.02, 0.12]} />
+        <meshStandardMaterial
+          color="#d0d0d0"
+          roughness={0.4}
+          metalness={0.1}
+        />
       </mesh>
-      {/* Key rows */}
+
+      {/* Keys */}
       {[0, 1, 2, 3].map((row) => (
-        <group key={row} position={[0, 0.015, -0.04 + row * 0.025]}>
+        <group key={row} position={[0, 0.013, -0.035 + row * 0.026]}>
           {Array.from({ length: 12 }).map((_, i) => (
-            <mesh key={i} position={[-0.14 + i * 0.025, 0, 0]}>
-              <boxGeometry args={[0.02, 0.005, 0.02]} />
-              <meshStandardMaterial color="#e8e8e8" />
+            <mesh
+              key={i}
+              position={[-0.14 + i * 0.024, 0, 0]}
+              castShadow
+            >
+              <boxGeometry args={[0.018, 0.005, 0.018]} />
+              <meshStandardMaterial
+                color="#e8e8e8"
+                roughness={0.3}
+                metalness={0.1}
+              />
             </mesh>
           ))}
         </group>
