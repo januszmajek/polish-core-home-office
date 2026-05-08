@@ -64,8 +64,8 @@ export function Scene() {
     <Canvas
       shadows
       camera={{ 
-        position: [0, 1.4, 2.5], 
-        fov: 60,
+        position: [0, 2.2, 4.5], 
+        fov: 65,
         near: 0.1,
         far: 100
       }}
@@ -85,7 +85,7 @@ export function Scene() {
       </Suspense>
       
       {/* Fog for depth cues */}
-      <fog attach="fog" args={["#0a0a0a", 3, 12]} />
+      <fog attach="fog" args={["#0a0a0a", 8, 18]} />
     </Canvas>
   );
 }

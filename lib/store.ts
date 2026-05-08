@@ -18,9 +18,9 @@ export interface CameraPosition {
 
 export const CAMERA_POSITIONS: Record<InteractionZone, CameraPosition> = {
   overview: {
-    position: [0, 1.4, 2.5],
-    target: [0, 0.8, 0],
-    fov: 60,
+    position: [0, 2.2, 4.5],
+    target: [0, 0.6, -1.0],
+    fov: 65,
   },
   monitor: {
     position: [-0.6, 1.2, 0.3],

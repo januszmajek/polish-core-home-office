@@ -34,14 +34,15 @@ export function NavigationHUD() {
       </div>
 
       {/* Navigation bar at bottom */}
-      <div className="flex justify-center p-4 pointer-events-auto">
+      <div className="flex justify-center px-2 pb-4 pt-2 pointer-events-auto">
         <div 
-          className="flex gap-1 p-1"
+          className="flex flex-wrap justify-center gap-1 p-1"
           style={{
             background: "#c0c0c0",
             border: "2px solid",
             borderColor: "#ffffff #404040 #404040 #ffffff",
-            fontFamily: '"MS Sans Serif", Tahoma, sans-serif'
+            fontFamily: '"MS Sans Serif", Tahoma, sans-serif',
+            maxWidth: "100%"
           }}
         >
           {(Object.keys(CAMERA_POSITIONS) as InteractionZone[]).map((zone) => (
@@ -49,7 +50,7 @@ export function NavigationHUD() {
               key={zone}
               onClick={() => setZone(zone)}
               disabled={isTransitioning}
-              className="px-3 py-1 text-xs transition-colors"
+              className="px-2 py-1 text-xs transition-colors whitespace-nowrap"
               style={{
                 background: currentZone === zone ? "#000080" : "#c0c0c0",
                 color: currentZone === zone ? "white" : "black",
