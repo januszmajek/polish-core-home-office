@@ -30,25 +30,25 @@ function SceneContent() {
       {/* Room structure */}
       <AtticRoom />
       
-      {/* Furniture - properly scaled and positioned */}
+      {/* Long desk runs along the back wall (z = -2) */}
       <Desk />
-      
-      {/* Office chairs at desk */}
-      <OfficeChair position={[-1.2, 0, -0.8]} rotation={Math.PI * 0.1} />
-      <OfficeChair position={[0.4, 0, -0.8]} rotation={-Math.PI * 0.05} />
-      
-      {/* CRT Monitor on desk */}
-      <CrtMonitor position={[-0.8, 0.75, -1.8]} />
-      <Keyboard position={[-0.5, 0.75, -1.5]} />
-      
-      {/* Sofa in corner */}
-      <Sofa position={[-1.8, 0, 1.2]} />
-      
-      {/* Bookshelf on right side */}
-      <Bookshelf position={[2.0, 0, -0.5]} />
-      
-      {/* Door on back wall */}
-      <Door position={[1.2, 0, 1.95]} />
+
+      {/* Office chairs pulled out from the desk */}
+      <OfficeChair position={[-1.1, 0, -1.2]} rotation={Math.PI * 0.05} />
+      <OfficeChair position={[0.5, 0, -1.2]} rotation={-Math.PI * 0.04} />
+
+      {/* CRT Monitor sitting on the desk surface */}
+      <CrtMonitor position={[-0.7, 0.75, -1.85]} />
+      <Keyboard position={[-0.5, 0.75, -1.55]} />
+
+      {/* Sofa against the left wall, front half of room */}
+      <Sofa position={[-1.9, 0, 0.8]} />
+
+      {/* Bookshelf against the right wall */}
+      <Bookshelf position={[2.1, 0, 0.2]} />
+
+      {/* Door on the front-right area */}
+      <Door position={[1.5, 0, 1.85]} />
       
       {/* Camera system */}
       <CameraController />
@@ -64,8 +64,8 @@ export function Scene() {
     <Canvas
       shadows
       camera={{ 
-        position: [0, 2.2, 4.5], 
-        fov: 65,
+        position: [0, 1.55, 2.8], 
+        fov: 62,
         near: 0.1,
         far: 100
       }}
@@ -85,7 +85,7 @@ export function Scene() {
       </Suspense>
       
       {/* Fog for depth cues */}
-      <fog attach="fog" args={["#0a0a0a", 8, 18]} />
+      <fog attach="fog" args={["#1a1208", 6, 14]} />
     </Canvas>
   );
 }

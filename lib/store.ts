@@ -17,39 +17,46 @@ export interface CameraPosition {
 }
 
 export const CAMERA_POSITIONS: Record<InteractionZone, CameraPosition> = {
+  // Standing in doorway looking into the room toward the desk wall (back)
   overview: {
-    position: [0, 2.2, 4.5],
-    target: [0, 0.6, -1.0],
-    fov: 65,
+    position: [0, 1.55, 2.8],
+    target: [0, 1.2, -1.5],
+    fov: 62,
   },
+  // Close to monitor on desk
   monitor: {
-    position: [-0.6, 1.2, 0.3],
-    target: [-0.8, 0.75, -1.8],
-    fov: 45,
+    position: [-0.5, 1.15, -0.6],
+    target: [-0.6, 0.9, -2.0],
+    fov: 48,
   },
+  // Left side of desk
   "desk-left": {
-    position: [-1.5, 1.3, 0.8],
-    target: [-1.2, 0.75, -0.8],
+    position: [-1.8, 1.3, 0.4],
+    target: [-1.2, 0.8, -1.8],
     fov: 55,
   },
+  // Right side of desk
   "desk-right": {
-    position: [0.8, 1.3, 0.8],
-    target: [0.4, 0.75, -0.8],
+    position: [1.0, 1.3, 0.4],
+    target: [0.4, 0.8, -1.8],
     fov: 55,
   },
+  // Bookshelf on the right
   bookshelf: {
-    position: [2.2, 1.2, 1.5],
-    target: [2.0, 0.8, -0.5],
-    fov: 50,
+    position: [1.8, 1.2, 0.5],
+    target: [2.2, 0.9, -0.5],
+    fov: 52,
   },
+  // Sofa on the left
   sofa: {
-    position: [-1.5, 1.2, 1.8],
-    target: [-1.8, 0.6, 1.2],
+    position: [-1.6, 1.1, 1.2],
+    target: [-1.8, 0.7, 0.2],
     fov: 55,
   },
+  // Exit door area
   door: {
-    position: [0.5, 1.3, 1.8],
-    target: [1.2, 1, 1.95],
+    position: [0.8, 1.3, 1.5],
+    target: [1.2, 1.1, 1.9],
     fov: 55,
   },
 };

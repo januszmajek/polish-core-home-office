@@ -6,25 +6,39 @@ import { useAppStore } from "@/lib/store";
 
 // Desk component - proportioned for human scale
 export function Desk() {
-  const woodColor = useMemo(() => new THREE.Color("#a68f6f"), []);
+  const woodColor = useMemo(() => new THREE.Color("#b89a6f"), []);
 
+  // Long L-shaped desk running along back wall, centered at z=-1.8
   return (
-    <group position={[-0.5, 0, -1.5]}>
-      {/* Main desk surface - real desk size */}
+    <group position={[0, 0, -1.85]}>
+      {/* Main long surface spanning most of the back wall */}
       <mesh position={[0, 0.75, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.6, 0.04, 0.7]} />
-        <meshStandardMaterial
-          color={woodColor}
-          roughness={0.6}
-          metalness={0.05}
-        />
+        <boxGeometry args={[3.6, 0.04, 0.65]} />
+        <meshStandardMaterial color={woodColor} roughness={0.55} metalness={0.05} />
       </mesh>
 
-      {/* Desk legs with proper thickness */}
-      <DeskLeg position={[-0.7, 0.375, -0.3]} />
-      <DeskLeg position={[0.7, 0.375, -0.3]} />
-      <DeskLeg position={[-0.7, 0.375, 0.25]} />
-      <DeskLeg position={[0.7, 0.375, 0.25]} />
+      {/* Under-desk shelf for storage */}
+      <mesh position={[0, 0.35, 0]} castShadow receiveShadow>
+        <boxGeometry args={[3.6, 0.03, 0.6]} />
+        <meshStandardMaterial color={woodColor} roughness={0.65} metalness={0} />
+      </mesh>
+
+      {/* Left side panel */}
+      <mesh position={[-1.77, 0.375, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.04, 0.75, 0.63]} />
+        <meshStandardMaterial color="#9a8055" roughness={0.7} metalness={0} />
+      </mesh>
+
+      {/* Right side panel */}
+      <mesh position={[1.77, 0.375, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.04, 0.75, 0.63]} />
+        <meshStandardMaterial color="#9a8055" roughness={0.7} metalness={0} />
+      </mesh>
+
+      {/* Support legs */}
+      <DeskLeg position={[-1.5, 0.375, 0.28]} />
+      <DeskLeg position={[0, 0.375, 0.28]} />
+      <DeskLeg position={[1.5, 0.375, 0.28]} />
     </group>
   );
 }

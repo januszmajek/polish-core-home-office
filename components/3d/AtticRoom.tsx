@@ -1,414 +1,417 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useMemo } from "react";
 import * as THREE from "three";
 
-// Human-scaled room dimensions (meters)
-const ROOM_WIDTH = 5;
-const ROOM_DEPTH = 4;
-const WALL_HEIGHT = 1.8; // Eye level for sitting
-const ROOF_PEAK_HEIGHT = 2.6;
-const ROOF_SLOPE = Math.PI / 8; // 22.5 degrees - realistic attic slope
+// Room dimensions — human-scaled (meters)
+// The real attic: floor ~5m wide, ~4m deep.
+// One side (front / viewer side) the ceiling slopes down to ~1.1m at the LOW wall.
+// The back wall is tall (~2.4m) and vertical — desk sits against it.
+// The skylight is in the sloped ceiling above the desk area.
+const W = 5;     // room width (X)
+const D = 4;     // room depth (Z, negative = back/desk side)
+const H_LOW = 1.1;   // ceiling height at the low/front wall
+const H_HIGH = 2.5;  // ceiling height at the back/desk wall
+const WALL_THICK = 0.12;
 
 export function AtticRoom() {
   return (
     <group>
-      {/* Floor - proper wood material */}
       <Floor />
-      
-      {/* Walls and roof structure */}
-      <RoomGeometry />
-      
-      {/* Lighting setup */}
+      <Walls />
+      <SlopedCeiling />
+      <Beams />
       <LightingSetup />
     </group>
   );
 }
 
-function Floor() {
-  // Create realistic wood floor texture
-  const woodTexture = useMemo(() => {
+// ─── MATERIALS ──────────────────────────────────────────────────────────────
+
+function useWoodFloorTexture() {
+  return useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 128;
+    canvas.width = 256;
+    canvas.height = 256;
     const ctx = canvas.getContext("2d")!;
-
-    // Base wood color
-    ctx.fillStyle = "#c8a882";
-    ctx.fillRect(0, 0, 128, 128);
-
-    // Random plank color variation
-    for (let i = 0; i < 128; i += 32) {
-      const variation = Math.random() * 20 - 10;
-      ctx.fillStyle = `hsl(30, 35%, ${50 + variation}%)`;
-      ctx.fillRect(i, 0, 32, 128);
-
-      // Wood grain lines within plank
-      ctx.strokeStyle = `rgba(0, 0, 0, ${0.05 + Math.random() * 0.05})`;
-      ctx.lineWidth = 0.5;
-      for (let j = 0; j < 128; j += 4) {
+    const plankW = 32;
+    for (let x = 0; x < 256; x += plankW) {
+      const base = 50 + Math.random() * 12;
+      ctx.fillStyle = `hsl(30, 38%, ${base}%)`;
+      ctx.fillRect(x, 0, plankW, 256);
+      // grain lines
+      ctx.strokeStyle = `rgba(0,0,0,${0.04 + Math.random() * 0.06})`;
+      ctx.lineWidth = 0.6;
+      for (let y = 0; y < 256; y += 5) {
         ctx.beginPath();
-        ctx.moveTo(i, j);
-        ctx.lineTo(i + 32, j + Math.random() * 2 - 1);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + plankW, y + (Math.random() * 3 - 1.5));
         ctx.stroke();
       }
     }
-
-    // Plank separations
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 128; i += 32) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, 128);
-      ctx.stroke();
+    // plank separations
+    ctx.strokeStyle = "rgba(0,0,0,0.22)";
+    ctx.lineWidth = 1.5;
+    for (let x = 0; x < 256; x += plankW) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 256); ctx.stroke();
     }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(3, 2.5);
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    return texture;
+    const t = new THREE.CanvasTexture(canvas);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(3, 2);
+    t.magFilter = THREE.LinearFilter;
+    t.minFilter = THREE.LinearMipmapLinearFilter;
+    return t;
   }, []);
+}
 
+function useWallTexture(hex: string) {
+  return useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128; canvas.height = 128;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = hex;
+    ctx.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 300; i++) {
+      ctx.fillStyle = `rgba(${Math.random() > 0.5 ? "255,255,255" : "0,0,0"},${Math.random() * 0.06})`;
+      ctx.fillRect(Math.random() * 128, Math.random() * 128, Math.random() * 3 + 0.5, Math.random() * 3 + 0.5);
+    }
+    const t = new THREE.CanvasTexture(canvas);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(2, 2);
+    t.magFilter = THREE.LinearFilter;
+    t.minFilter = THREE.LinearMipmapLinearFilter;
+    return t;
+  }, [hex]);
+}
+
+// ─── FLOOR ──────────────────────────────────────────────────────────────────
+
+function Floor() {
+  const tex = useWoodFloorTexture();
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-      <planeGeometry args={[ROOM_WIDTH, ROOM_DEPTH]} />
-      <meshStandardMaterial
-        map={woodTexture}
-        color="#c8a882"
-        roughness={0.7}
-        metalness={0}
-      />
+      <planeGeometry args={[W, D]} />
+      <meshStandardMaterial map={tex} roughness={0.65} metalness={0} />
     </mesh>
   );
 }
 
-function RoomGeometry() {
-  const wallColor = useMemo(() => new THREE.Color("#d9b876"), []);
-  const ceilingColor = useMemo(() => new THREE.Color("#f0ebe2"), []);
+// ─── WALLS ──────────────────────────────────────────────────────────────────
 
-  // Create textured materials for walls
-  const wallMaterial = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext("2d")!;
+function Walls() {
+  const mustardTex = useWallTexture("#d4a84b");
+  const ceilingTex = useWallTexture("#ede8df");
 
-    ctx.fillStyle = "#d9b876";
-    ctx.fillRect(0, 0, 64, 64);
+  const mustardMat = useMemo(() =>
+    new THREE.MeshStandardMaterial({ map: mustardTex, roughness: 0.82, metalness: 0 })
+  , [mustardTex]);
 
-    // Plaster texture - subtle imperfections
-    for (let i = 0; i < 200; i++) {
-      const x = Math.random() * 64;
-      const y = Math.random() * 64;
-      const size = Math.random() * 2 + 0.5;
-      ctx.fillStyle = `rgba(200, 180, 160, ${Math.random() * 0.15})`;
-      ctx.fillRect(x, y, size, size);
-    }
+  const ceilingMat = useMemo(() =>
+    new THREE.MeshStandardMaterial({ map: ceilingTex, color: "#ede8df", roughness: 0.9, metalness: 0 })
+  , [ceilingTex]);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(2, 2);
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
+  const trimMat = useMemo(() =>
+    new THREE.MeshStandardMaterial({ color: "#b8975a", roughness: 0.55, metalness: 0 })
+  , []);
 
-    return new THREE.MeshStandardMaterial({
-      map: texture,
-      color: wallColor,
-      roughness: 0.8,
-      metalness: 0,
-    });
-  }, [wallColor]);
-
-  const ceilingMaterial = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext("2d")!;
-
-    ctx.fillStyle = "#f0ebe2";
-    ctx.fillRect(0, 0, 32, 32);
-
-    // Plaster variation on ceiling
-    for (let i = 0; i < 100; i++) {
-      ctx.fillStyle = `rgba(180, 170, 160, ${Math.random() * 0.1})`;
-      ctx.fillRect(
-        Math.random() * 32,
-        Math.random() * 32,
-        Math.random() * 1.5 + 0.5,
-        Math.random() * 1.5 + 0.5
-      );
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(4, 3);
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-
-    return new THREE.MeshStandardMaterial({
-      map: texture,
-      color: ceilingColor,
-      roughness: 0.9,
-      metalness: 0,
-    });
-  }, [ceilingColor]);
+  // The back wall (Z = -D/2) is the TALL wall where the desk is.
+  // Height varies across X only for the sloped ceiling but the back WALL itself is flat & tall.
+  const backWallH = H_HIGH;
+  // The front wall (Z = +D/2) is SHORT because the ceiling is low there.
+  const frontWallH = H_LOW;
 
   return (
     <group>
-      {/* Front wall - full height */}
-      <mesh position={[0, WALL_HEIGHT / 2, ROOM_DEPTH / 2]} receiveShadow>
-        <boxGeometry args={[ROOM_WIDTH, WALL_HEIGHT, 0.15]} />
-        <primitive object={wallMaterial.clone()} />
-      </mesh>
-
-      {/* Back wall - full height */}
-      <mesh position={[0, WALL_HEIGHT / 2, -ROOM_DEPTH / 2]} receiveShadow>
-        <boxGeometry args={[ROOM_WIDTH, WALL_HEIGHT, 0.15]} />
-        <primitive object={wallMaterial.clone()} />
-      </mesh>
-
-      {/* Left wall - extends to roof peak */}
+      {/* ── Back wall (desk wall) — TALL, mustard yellow ── */}
       <mesh
-        position={[-ROOM_WIDTH / 2, (WALL_HEIGHT + ROOF_PEAK_HEIGHT) / 2, 0]}
+        position={[0, backWallH / 2, -D / 2 - WALL_THICK / 2]}
+        receiveShadow castShadow
+      >
+        <boxGeometry args={[W, backWallH, WALL_THICK]} />
+        <primitive object={mustardMat.clone()} />
+      </mesh>
+
+      {/* ── Front wall — SHORT, mustard yellow (sloped ceiling meets it) ── */}
+      <mesh
+        position={[0, frontWallH / 2, D / 2 + WALL_THICK / 2]}
         receiveShadow
       >
-        <boxGeometry
-          args={[0.15, WALL_HEIGHT + ROOF_PEAK_HEIGHT - WALL_HEIGHT, ROOM_DEPTH]}
-        />
-        <primitive object={wallMaterial.clone()} />
+        <boxGeometry args={[W, frontWallH, WALL_THICK]} />
+        <primitive object={mustardMat.clone()} />
       </mesh>
 
-      {/* Right wall - extends to roof peak */}
-      <mesh
-        position={[ROOM_WIDTH / 2, (WALL_HEIGHT + ROOF_PEAK_HEIGHT) / 2, 0]}
-        receiveShadow
-      >
-        <boxGeometry
-          args={[0.15, ROOF_PEAK_HEIGHT, ROOM_DEPTH]}
-        />
-        <primitive object={wallMaterial.clone()} />
-      </mesh>
-
-      {/* Left sloped roof */}
-      <mesh
-        position={[-ROOM_WIDTH / 4, WALL_HEIGHT + (ROOF_PEAK_HEIGHT - WALL_HEIGHT) / 2, 0]}
-        rotation={[0, 0, ROOF_SLOPE]}
-        receiveShadow
-      >
-        <boxGeometry
-          args={[
-            Math.cos(ROOF_SLOPE) * ROOM_WIDTH / 2,
-            0.15,
-            ROOM_DEPTH
-          ]}
-        />
-        <primitive object={ceilingMaterial.clone()} />
-      </mesh>
-
-      {/* Right sloped roof */}
-      <mesh
-        position={[ROOM_WIDTH / 4, WALL_HEIGHT + (ROOF_PEAK_HEIGHT - WALL_HEIGHT) / 2, 0]}
-        rotation={[0, 0, -ROOF_SLOPE]}
-        receiveShadow
-      >
-        <boxGeometry
-          args={[
-            Math.cos(ROOF_SLOPE) * ROOM_WIDTH / 2,
-            0.15,
-            ROOM_DEPTH
-          ]}
-        />
-        <primitive object={ceilingMaterial.clone()} />
-      </mesh>
-
-      {/* Skylight window - positioned in roof */}
-      <SkylightWindow
-        position={[0, ROOF_PEAK_HEIGHT - 0.3, -ROOM_DEPTH / 3]}
+      {/* ── Left side wall — trapezoid shape via custom BufferGeometry ── */}
+      <SideWall
+        side="left"
+        material={mustardMat.clone()}
+        ceilingMat={ceilingMat.clone()}
       />
 
-      {/* Wooden trim/molding at wall-ceiling junction */}
-      <Trim position={[0, WALL_HEIGHT, 0]} />
-
-      {/* Structural beam for realism */}
-      <Beam position={[0, ROOF_PEAK_HEIGHT - 0.1, 0]} />
-    </group>
-  );
-}
-
-function SkylightWindow({ position }: { position: [number, number, number] }) {
-  const frameWidth = 1.2;
-  const frameHeight = 0.8;
-
-  return (
-    <group position={position} rotation={[-ROOF_SLOPE * 0.5, 0, 0]}>
-      {/* Glass pane - bright blue sky */}
-      <mesh position={[0, 0, 0.04]}>
-        <planeGeometry args={[frameWidth - 0.1, frameHeight - 0.1]} />
-        <meshBasicMaterial color="#c4d9f0" />
-      </mesh>
-
-      {/* Wooden frame */}
-      {/* Top */}
-      <mesh position={[0, frameHeight / 2, 0]}>
-        <boxGeometry args={[frameWidth, 0.08, 0.12]} />
-        <meshStandardMaterial
-          color="#a89968"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-
-      {/* Bottom */}
-      <mesh position={[0, -frameHeight / 2, 0]}>
-        <boxGeometry args={[frameWidth, 0.08, 0.12]} />
-        <meshStandardMaterial
-          color="#a89968"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-
-      {/* Left */}
-      <mesh position={[-frameWidth / 2, 0, 0]}>
-        <boxGeometry args={[0.08, frameHeight, 0.12]} />
-        <meshStandardMaterial
-          color="#a89968"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-
-      {/* Right */}
-      <mesh position={[frameWidth / 2, 0, 0]}>
-        <boxGeometry args={[0.08, frameHeight, 0.12]} />
-        <meshStandardMaterial
-          color="#a89968"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-
-      {/* Center divider */}
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[0.05, frameHeight, 0.12]} />
-        <meshStandardMaterial
-          color="#9d8f5c"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-function Trim({ position }: { position: [number, number, number] }) {
-  // Wooden trim at wall-ceiling junction
-  return (
-    <group position={position}>
-      {/* Front trim */}
-      <mesh position={[0, 0, ROOM_DEPTH / 2]}>
-        <boxGeometry args={[ROOM_WIDTH, 0.08, 0.05]} />
-        <meshStandardMaterial
-          color="#a89968"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-
-      {/* Back trim */}
-      <mesh position={[0, 0, -ROOM_DEPTH / 2]}>
-        <boxGeometry args={[ROOM_WIDTH, 0.08, 0.05]} />
-        <meshStandardMaterial
-          color="#a89968"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-
-      {/* Side trims */}
-      <mesh position={[ROOM_WIDTH / 2, 0, 0]}>
-        <boxGeometry args={[0.05, 0.08, ROOM_DEPTH]} />
-        <meshStandardMaterial
-          color="#a89968"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-
-      <mesh position={[-ROOM_WIDTH / 2, 0, 0]}>
-        <boxGeometry args={[0.05, 0.08, ROOM_DEPTH]} />
-        <meshStandardMaterial
-          color="#a89968"
-          roughness={0.6}
-          metalness={0}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-function Beam({ position }: { position: [number, number, number] }) {
-  // Central support beam for realistic attic
-  return (
-    <mesh position={position}>
-      <boxGeometry args={[0.1, 0.15, ROOM_DEPTH - 0.3]} />
-      <meshStandardMaterial
-        color="#8b7355"
-        roughness={0.7}
-        metalness={0}
+      {/* ── Right side wall ── */}
+      <SideWall
+        side="right"
+        material={mustardMat.clone()}
+        ceilingMat={ceilingMat.clone()}
       />
-    </mesh>
+
+      {/* ── Baseboard trim ── */}
+      {/* Back wall baseboard */}
+      <mesh position={[0, 0.05, -D / 2 - WALL_THICK - 0.01]} receiveShadow>
+        <boxGeometry args={[W, 0.1, 0.04]} />
+        <primitive object={trimMat.clone()} />
+      </mesh>
+      {/* Left baseboard */}
+      <mesh position={[-W / 2 - 0.01, 0.05, 0]} receiveShadow>
+        <boxGeometry args={[0.04, 0.1, D]} />
+        <primitive object={trimMat.clone()} />
+      </mesh>
+      {/* Right baseboard */}
+      <mesh position={[W / 2 + 0.01, 0.05, 0]} receiveShadow>
+        <boxGeometry args={[0.04, 0.1, D]} />
+        <primitive object={trimMat.clone()} />
+      </mesh>
+    </group>
   );
 }
+
+// Custom trapezoid side wall matching the sloped ceiling
+function SideWall({
+  side,
+  material,
+}: {
+  side: "left" | "right";
+  material: THREE.Material;
+  ceilingMat: THREE.Material;
+}) {
+  const x = side === "left" ? -W / 2 : W / 2;
+  const sign = side === "left" ? -1 : 1;
+
+  // vertices of the wall quad (trapezoid):
+  // floor-front, floor-back, ceiling-back (tall), ceiling-front (short)
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    // Outer face (facing outward from room)
+    // We'll build 2 triangles making the trapezoid
+    const zFront = D / 2;
+    const zBack = -D / 2;
+    const yFloor = 0;
+    const yFront = H_LOW;
+    const yBack = H_HIGH;
+
+    // positions: 4 corners
+    const pos = new Float32Array([
+      // tri 1
+      x, yFloor, zFront,   // 0 floor-front
+      x, yFloor, zBack,    // 1 floor-back
+      x, yBack, zBack,     // 2 ceil-back
+      // tri 2
+      x, yFloor, zFront,   // 3 floor-front
+      x, yBack, zBack,     // 4 ceil-back
+      x, yFront, zFront,   // 5 ceil-front
+    ]);
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+
+    // UVs
+    const uvs = new Float32Array([
+      0, 0,  1, 0,  1, 1,
+      0, 0,  1, 1,  0, 1,
+    ]);
+    g.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+
+    // Normals — outward facing
+    const nx = sign;
+    const normals = new Float32Array(18).fill(0);
+    for (let i = 0; i < 6; i++) { normals[i * 3] = nx; }
+    g.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
+
+    g.computeBoundingSphere();
+    return g;
+  }, [x, sign]);
+
+  return <mesh geometry={geo} material={material} receiveShadow castShadow />;
+}
+
+// ─── SLOPED CEILING ─────────────────────────────────────────────────────────
+
+function SlopedCeiling() {
+  const ceilingTex = useWallTexture("#ede8df");
+
+  const mat = useMemo(() =>
+    new THREE.MeshStandardMaterial({ map: ceilingTex, color: "#ede8df", roughness: 0.88, metalness: 0, side: THREE.FrontSide })
+  , [ceilingTex]);
+
+  // The sloped ceiling goes from y=H_LOW at z=+D/2 (front) to y=H_HIGH at z=-D/2 (back).
+  // Slope angle:
+  const angle = Math.atan2(H_HIGH - H_LOW, D); // rise/run
+  const length = Math.sqrt(D * D + (H_HIGH - H_LOW) ** 2);
+  const midY = (H_LOW + H_HIGH) / 2;
+  const midZ = 0;
+
+  // Skylight cutout position in the slope — upper third, centred on X
+  // We render the skylight frame separately — the ceiling is a flat panel (no actual hole, but visually convincing)
+  return (
+    <group>
+      {/* Main sloped ceiling panel */}
+      <mesh
+        position={[0, midY, midZ]}
+        rotation={[angle, 0, 0]}
+        receiveShadow
+      >
+        <planeGeometry args={[W, length, 1, 1]} />
+        <primitive object={mat} />
+      </mesh>
+
+      {/* Skylight — embedded in slope above the desk area */}
+      <SkylightWindow angle={angle} />
+
+      {/* Ceiling trim strips along the slope edges */}
+      <CeilingTrim angle={angle} midY={midY} midZ={midZ} length={length} />
+    </group>
+  );
+}
+
+function SkylightWindow({ angle }: { angle: number }) {
+  // Position the skylight at ~2/3 depth toward the back wall (above desk area)
+  // We need the world-space position along the slope at depth ratio t=0.7 (close to back wall)
+  const t = 0.72; // 0=front, 1=back
+  const sz = D / 2 - t * D;           // z world position
+  const sy = H_LOW + t * (H_HIGH - H_LOW); // y world position
+
+  const frameW = 1.4;
+  const frameH = 0.9;
+  const woodMat = new THREE.MeshStandardMaterial({ color: "#a08040", roughness: 0.55, metalness: 0 });
+  const glassMat = new THREE.MeshStandardMaterial({ color: "#c8dcf0", transparent: true, opacity: 0.7, roughness: 0, metalness: 0.1 });
+  const lightMat = new THREE.MeshBasicMaterial({ color: "#e8f4ff" });
+
+  return (
+    <group position={[0, sy + 0.05, sz]} rotation={[angle, 0, 0]}>
+      {/* Bright sky seen through glass */}
+      <mesh position={[0, 0, 0.02]}>
+        <planeGeometry args={[frameW - 0.14, frameH - 0.14]} />
+        <primitive object={lightMat} />
+      </mesh>
+
+      {/* Glass */}
+      <mesh position={[0, 0, 0.03]}>
+        <planeGeometry args={[frameW - 0.14, frameH - 0.14]} />
+        <primitive object={glassMat} />
+      </mesh>
+
+      {/* Frame — top/bottom/left/right rails */}
+      {[
+        { pos: [0, frameH / 2, 0] as [number,number,number], size: [frameW, 0.07, 0.12] as [number,number,number] },
+        { pos: [0, -frameH / 2, 0] as [number,number,number], size: [frameW, 0.07, 0.12] as [number,number,number] },
+        { pos: [-frameW / 2, 0, 0] as [number,number,number], size: [0.07, frameH, 0.12] as [number,number,number] },
+        { pos: [frameW / 2, 0, 0] as [number,number,number], size: [0.07, frameH, 0.12] as [number,number,number] },
+        // centre divider
+        { pos: [0, 0, 0] as [number,number,number], size: [0.05, frameH, 0.1] as [number,number,number] },
+      ].map((r, i) => (
+        <mesh key={i} position={r.pos} castShadow>
+          <boxGeometry args={r.size} />
+          <primitive object={woodMat.clone()} />
+        </mesh>
+      ))}
+
+      {/* Point light inside skylight — mimics sunlight entering */}
+      <pointLight position={[0, -0.3, 0.5]} intensity={1.8} color="#fffbe8" distance={5} decay={2} castShadow />
+    </group>
+  );
+}
+
+function CeilingTrim({ angle, midY, midZ, length }: { angle: number; midY: number; midZ: number; length: number }) {
+  const trimMat = useMemo(() =>
+    new THREE.MeshStandardMaterial({ color: "#b8975a", roughness: 0.55, metalness: 0 })
+  , []);
+
+  return (
+    <group position={[0, midY, midZ]} rotation={[angle, 0, 0]}>
+      {/* Left edge strip */}
+      <mesh position={[-W / 2 + 0.04, 0, 0]}>
+        <boxGeometry args={[0.08, length, 0.06]} />
+        <primitive object={trimMat.clone()} />
+      </mesh>
+      {/* Right edge strip */}
+      <mesh position={[W / 2 - 0.04, 0, 0]}>
+        <boxGeometry args={[0.08, length, 0.06]} />
+        <primitive object={trimMat.clone()} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── BEAMS ───────────────────────────────────────────────────────────────────
+
+function Beams() {
+  const beamMat = useMemo(() =>
+    new THREE.MeshStandardMaterial({ color: "#7a6240", roughness: 0.75, metalness: 0 })
+  , []);
+
+  // Two cross-beams running left-right across the slope, at different depths
+  const beamPositions = [-0.5, 0.8]; // z positions
+
+  return (
+    <group>
+      {beamPositions.map((bz, i) => {
+        const t = (bz - (-D / 2)) / D;
+        const by = H_LOW + (1 - t) * (H_HIGH - H_LOW) - 0.1;
+        return (
+          <mesh key={i} position={[0, by, bz]} castShadow receiveShadow>
+            <boxGeometry args={[W - 0.3, 0.12, 0.1]} />
+            <primitive object={beamMat.clone()} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+// ─── LIGHTING ────────────────────────────────────────────────────────────────
 
 function LightingSetup() {
   return (
     <group>
-      {/* Main directional light from skylight - warm quality */}
+      {/* Ambient — warm fill, mimics bounce light */}
+      <ambientLight intensity={0.55} color="#f2e8d8" />
+
+      {/* Main directional — sun coming through skylight from upper-back */}
       <directionalLight
-        position={[1, 3, -1]}
-        intensity={1}
+        position={[0.5, 4, -3]}
+        intensity={1.1}
+        color="#fff5e0"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-near={0.5}
-        shadow-camera-far={20}
-        shadow-camera-left={-6}
-        shadow-camera-right={6}
-        shadow-camera-top={5}
-        shadow-camera-bottom={-5}
-        color="#fef4e6"
+        shadow-camera-far={18}
+        shadow-camera-left={-5}
+        shadow-camera-right={5}
+        shadow-camera-top={4}
+        shadow-camera-bottom={-4}
+        shadow-bias={-0.001}
       />
 
-      {/* Soft fill light for global illumination */}
-      <ambientLight intensity={0.5} color="#f0e6d2" />
-
-      {/* Warm bounce light from floor */}
-      <pointLight
-        position={[0, 0.8, 0]}
-        intensity={0.6}
-        color="#f5ddb8"
-        distance={8}
-      />
-
-      {/* Overhead warm accent light */}
-      <pointLight
-        position={[0, 2.2, -0.5]}
-        intensity={0.4}
-        color="#fff5e6"
-        distance={5}
-      />
-
-      {/* Rim light for silhouettes */}
+      {/* Warm fill from front/low side — simulates reflected wall light */}
       <directionalLight
-        position={[-3, 1.5, 2]}
-        intensity={0.3}
-        color="#e6c9a8"
+        position={[0, 1.5, 3]}
+        intensity={0.35}
+        color="#f0d8b0"
+      />
+
+      {/* Overhead practical lamp — warm point above center */}
+      <pointLight
+        position={[0, 2.0, 0]}
+        intensity={0.7}
+        color="#ffe8b0"
+        distance={6}
+        decay={2}
+      />
+
+      {/* Subtle cool sky bounce from skylight area */}
+      <pointLight
+        position={[0, 2.3, -1.5]}
+        intensity={0.5}
+        color="#d0e8ff"
+        distance={4}
+        decay={2}
       />
     </group>
   );
