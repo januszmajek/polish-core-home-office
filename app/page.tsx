@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { NavigationHUD } from "@/components/ui/NavigationHUD";
-import { PortfolioOverlay } from "@/components/ui/PortfolioOverlay";
 
 // Dynamically import the 3D scene to avoid SSR issues with Three.js
 const Scene = dynamic(
@@ -89,7 +88,6 @@ export default function Home() {
       
       {/* UI Overlays */}
       <NavigationHUD />
-      <PortfolioOverlay />
       
       {/* Scanline overlay for retro CRT effect */}
       <div 

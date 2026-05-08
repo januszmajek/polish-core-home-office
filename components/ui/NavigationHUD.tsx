@@ -14,7 +14,7 @@ const ZONE_LABELS: Record<InteractionZone, string> = {
 };
 
 export function NavigationHUD() {
-  const { currentZone, setZone, isTransitioning, togglePortfolio, freeCamera, toggleFreeCamera } = useAppStore();
+  const { currentZone, setZone, isTransitioning, freeCamera, toggleFreeCamera } = useAppStore();
 
   return (
     <>
@@ -50,30 +50,12 @@ export function NavigationHUD() {
             <div className="font-bold mb-1">Tip</div>
             {freeCamera
               ? <p>Drag to orbit, scroll to zoom, right-click to pan. Click a nav button to exit free look.</p>
-              : <p>Click glowing orbs or use buttons below to navigate. Click the monitor to view portfolio.</p>
+              : currentZone === "monitor"
+              ? <p>Click the monitor screen to toggle the portfolio display.</p>
+              : <p>Click glowing orbs or buttons below to navigate. Go to Computer to view portfolio.</p>
             }
           </div>
         </div>
-
-        {/* Hint tooltip above nav bar */}
-        {currentZone === "monitor" && (
-          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 pointer-events-auto">
-            <button
-              onClick={togglePortfolio}
-              className="px-4 py-2 animate-pulse"
-              style={{
-                background: "#ffffcc",
-                border: "2px solid",
-                borderColor: "#ffffff #808080 #808080 #ffffff",
-                fontFamily: '"MS Sans Serif", Tahoma, sans-serif',
-                fontSize: "11px",
-                boxShadow: "2px 2px 0 rgba(0,0,0,0.3)",
-              }}
-            >
-              Click to open Portfolio
-            </button>
-          </div>
-        )}
 
         {/* Navigation bar - bottom center */}
         <div className="absolute bottom-0 inset-x-0 flex justify-center px-2 pb-3 pt-2 pointer-events-auto">

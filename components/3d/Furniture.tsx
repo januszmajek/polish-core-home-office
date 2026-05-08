@@ -2,7 +2,9 @@
 
 import { useRef, useMemo } from "react";
 import * as THREE from "three";
+import { Html } from "@react-three/drei";
 import { useAppStore } from "@/lib/store";
+import { MonitorPortfolioContent } from "@/components/ui/MonitorPortfolioContent";
 
 // Desk component - proportioned for human scale
 export function Desk() {
@@ -150,55 +152,117 @@ export function OfficeChair({
   );
 }
 
-// CRT Monitor - scaled appropriately
+// CRT Monitor - with embedded portfolio display
 export function CrtMonitor({ position }: { position: [number, number, number] }) {
-  const { setZone, togglePortfolio, showPortfolio } = useAppStore();
+  const { setZone, currentZone, showPortfolio, togglePortfolio } = useAppStore();
   const monitorRef = useRef<THREE.Group>(null);
+
+  // Screen dimensions in 3D units
+  const screenWidth = 0.36;
+  const screenHeight = 0.27;
+
+  // Check if we're zoomed into the monitor
+  const isMonitorView = currentZone === "monitor";
 
   return (
     <group ref={monitorRef} position={position}>
-      {/* Monitor body/bezel */}
-      <mesh position={[0, 0.2, 0]} castShadow>
-        <boxGeometry args={[0.45, 0.35, 0.2]} />
-        <meshStandardMaterial
-          color="#c0c0c0"
-          roughness={0.3}
-          metalness={0.6}
-        />
+      {/* Monitor body/bezel - CRT style bulky case */}
+      <mesh position={[0, 0.2, -0.05]} castShadow>
+        <boxGeometry args={[0.48, 0.38, 0.3]} />
+        <meshStandardMaterial color="#d4d0c8" roughness={0.4} metalness={0.1} />
       </mesh>
 
-      {/* Screen area */}
+      {/* Screen bezel frame */}
+      <mesh position={[0, 0.2, 0.1]}>
+        <boxGeometry args={[0.42, 0.32, 0.02]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.6} metalness={0.1} />
+      </mesh>
+
+      {/* Screen area - clickable */}
       <mesh
-        position={[0, 0.2, 0.105]}
+        position={[0, 0.2, 0.112]}
         onClick={(e) => {
           e.stopPropagation();
-          setZone("monitor");
-          setTimeout(() => togglePortfolio(), 500);
+          if (!isMonitorView) {
+            setZone("monitor");
+          } else {
+            togglePortfolio();
+          }
         }}
       >
-        <planeGeometry args={[0.36, 0.27]} />
-        <meshBasicMaterial
-          color={showPortfolio ? "#000080" : "#1a1a3a"}
-        />
+        <planeGeometry args={[screenWidth, screenHeight]} />
+        <meshBasicMaterial color={showPortfolio ? "#000040" : "#0a0a18"} />
       </mesh>
 
-      {/* Monitor stand */}
-      <mesh position={[0, 0.05, 0.08]} castShadow>
-        <boxGeometry args={[0.25, 0.08, 0.2]} />
-        <meshStandardMaterial
-          color="#9a9a9a"
-          roughness={0.5}
-          metalness={0.2}
-        />
-      </mesh>
+      {/* Portfolio content rendered on screen via Html */}
+      {showPortfolio && isMonitorView && (
+        <Html
+          position={[0, 0.2, 0.115]}
+          transform
+          occlude
+          distanceFactor={0.12}
+          style={{
+            width: "360px",
+            height: "270px",
+            overflow: "hidden",
+            background: "#000080",
+            borderRadius: "2px",
+          }}
+        >
+          <MonitorPortfolioContent />
+        </Html>
+      )}
 
-      {/* Power LED indicator */}
+      {/* CRT screen glow/reflection when off */}
       {!showPortfolio && (
-        <mesh position={[0.18, 0.08, 0.11]} castShadow>
-          <sphereGeometry args={[0.008, 8, 8]} />
-          <meshBasicMaterial color="#00cc00" />
+        <mesh position={[0, 0.2, 0.113]}>
+          <planeGeometry args={[screenWidth * 0.95, screenHeight * 0.95]} />
+          <meshBasicMaterial color="#0a1020" transparent opacity={0.8} />
         </mesh>
       )}
+
+      {/* "Click to view" prompt when at monitor but portfolio closed */}
+      {isMonitorView && !showPortfolio && (
+        <Html position={[0, 0.2, 0.12]} transform distanceFactor={0.15} center>
+          <div
+            style={{
+              color: "#00ff00",
+              fontFamily: "monospace",
+              fontSize: "14px",
+              textAlign: "center",
+              textShadow: "0 0 5px #00ff00",
+              animation: "blink 1s infinite",
+            }}
+          >
+            Click screen to view portfolio
+          </div>
+          <style>{`@keyframes blink { 50% { opacity: 0.5; } }`}</style>
+        </Html>
+      )}
+
+      {/* Monitor stand */}
+      <mesh position={[0, 0.02, 0.05]} castShadow>
+        <boxGeometry args={[0.2, 0.04, 0.18]} />
+        <meshStandardMaterial color="#c0c0c0" roughness={0.5} metalness={0.2} />
+      </mesh>
+
+      {/* Stand neck */}
+      <mesh position={[0, 0.04, 0.02]} castShadow>
+        <boxGeometry args={[0.08, 0.06, 0.08]} />
+        <meshStandardMaterial color="#b0b0b0" roughness={0.5} metalness={0.2} />
+      </mesh>
+
+      {/* Power LED */}
+      <mesh position={[0.2, 0.06, 0.11]} castShadow>
+        <sphereGeometry args={[0.008, 8, 8]} />
+        <meshBasicMaterial color={showPortfolio ? "#00ff00" : "#004400"} />
+      </mesh>
+
+      {/* Power button */}
+      <mesh position={[0.18, 0.06, 0.11]} castShadow>
+        <cylinderGeometry args={[0.012, 0.012, 0.01, 12]} rotation={[Math.PI / 2, 0, 0]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.4} metalness={0.3} />
+      </mesh>
     </group>
   );
 }
