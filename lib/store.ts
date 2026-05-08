@@ -23,11 +23,11 @@ export const CAMERA_POSITIONS: Record<InteractionZone, CameraPosition> = {
     target: [0, 1.2, -1.5],
     fov: 62,
   },
-  // Zoomed in close to monitor screen for reading
+  // Zoomed in very close to monitor screen - fullscreen view
   monitor: {
-    position: [-0.7, 0.97, -1.35],
+    position: [-0.7, 0.95, -1.58],
     target: [-0.7, 0.95, -1.85],
-    fov: 38,
+    fov: 32,
   },
   // Left side of desk
   "desk-left": {

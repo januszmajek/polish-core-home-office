@@ -194,16 +194,16 @@ export function CrtMonitor({ position }: { position: [number, number, number] })
         <meshBasicMaterial color={showPortfolio ? "#000040" : "#0a0a18"} />
       </mesh>
 
-      {/* Portfolio content rendered on screen via Html */}
+      {/* Portfolio content rendered on screen via Html - fullscreen size */}
       {showPortfolio && isMonitorView && (
         <Html
           position={[0, 0.2, 0.115]}
           transform
           occlude
-          distanceFactor={0.12}
+          distanceFactor={0.06}
           style={{
-            width: "360px",
-            height: "270px",
+            width: "640px",
+            height: "480px",
             overflow: "hidden",
             background: "#000080",
             borderRadius: "2px",

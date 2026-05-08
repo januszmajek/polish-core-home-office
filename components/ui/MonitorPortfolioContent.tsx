@@ -10,26 +10,26 @@ export function MonitorPortfolioContent() {
       className="w-full h-full flex flex-col"
       style={{
         fontFamily: '"MS Sans Serif", Tahoma, sans-serif',
-        fontSize: "11px",
+        fontSize: "14px",
         background: "#c0c0c0",
         color: "black",
       }}
     >
       {/* Title bar */}
       <div
-        className="flex items-center justify-between px-1 py-0.5 select-none"
+        className="flex items-center justify-between px-2 py-1 select-none"
         style={{
           background: "linear-gradient(90deg, #000080, #1084d0)",
           color: "white",
         }}
       >
-        <span className="font-bold text-xs">Portfolio - Internet Explorer</span>
+        <span className="font-bold text-sm">Portfolio - Internet Explorer</span>
         <button
           onClick={closePortfolio}
-          className="w-4 h-4 flex items-center justify-center text-xs font-bold"
+          className="w-5 h-5 flex items-center justify-center text-sm font-bold"
           style={{
             background: "#c0c0c0",
-            border: "1px solid",
+            border: "2px solid",
             borderColor: "#fff #808080 #808080 #fff",
             lineHeight: 1,
           }}
@@ -40,18 +40,18 @@ export function MonitorPortfolioContent() {
 
       {/* Menu bar */}
       <div
-        className="flex gap-2 px-1 py-0.5 text-xs"
+        className="flex gap-4 px-2 py-1 text-sm"
         style={{ background: "#c0c0c0", borderBottom: "1px solid #808080" }}
       >
-        <span className="underline">F</span>ile
-        <span className="underline">E</span>dit
-        <span className="underline">V</span>iew
-        <span className="underline">H</span>elp
+        <span><span className="underline">F</span>ile</span>
+        <span><span className="underline">E</span>dit</span>
+        <span><span className="underline">V</span>iew</span>
+        <span><span className="underline">H</span>elp</span>
       </div>
 
       {/* Toolbar / Tab buttons */}
       <div
-        className="flex gap-1 px-1 py-1"
+        className="flex gap-2 px-2 py-2"
         style={{ background: "#c0c0c0", borderBottom: "1px solid #808080" }}
       >
         <TabButton
@@ -76,12 +76,12 @@ export function MonitorPortfolioContent() {
 
       {/* Content area */}
       <div
-        className="flex-1 overflow-auto p-2"
+        className="flex-1 overflow-auto p-3"
         style={{
           background: "white",
           border: "2px solid",
           borderColor: "#808080 #fff #fff #808080",
-          margin: "2px",
+          margin: "4px",
         }}
       >
         {portfolioSection === "about" && <AboutSection />}
@@ -91,7 +91,7 @@ export function MonitorPortfolioContent() {
 
       {/* Status bar */}
       <div
-        className="px-1 py-0.5 text-xs"
+        className="px-2 py-1 text-sm"
         style={{
           background: "#c0c0c0",
           borderTop: "1px solid #808080",
@@ -116,11 +116,11 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className="px-2 py-0.5 text-xs"
+      className="px-4 py-1 text-sm font-medium"
       style={{
         background: active ? "#000080" : "#c0c0c0",
         color: active ? "white" : "black",
-        border: "1px solid",
+        border: "2px solid",
         borderColor: active ? "#404040 #fff #fff #404040" : "#fff #404040 #404040 #fff",
       }}
     >
@@ -131,24 +131,24 @@ function TabButton({
 
 function AboutSection() {
   return (
-    <div className="text-xs leading-tight">
-      <h2 className="font-bold text-sm mb-2 border-b border-gray-300 pb-1">About Me</h2>
+    <div className="text-sm leading-relaxed">
+      <h2 className="font-bold text-lg mb-3 border-b border-gray-300 pb-2">About Me</h2>
       
-      <div className="mb-2">
-        <span className="font-bold">Developer Name</span>
+      <div className="mb-3">
+        <span className="font-bold text-base">Developer Name</span>
         <span className="text-gray-500 ml-2">Full Stack Developer</span>
       </div>
       
-      <p className="mb-2 text-gray-700">
+      <p className="mb-3 text-gray-700">
         Welcome to my portfolio! I build web apps with modern technologies 
         while appreciating the aesthetics of computing history.
       </p>
 
-      <div className="mb-2">
+      <div className="mb-3">
         <span className="font-bold">Skills:</span>
-        <div className="flex flex-wrap gap-1 mt-1">
+        <div className="flex flex-wrap gap-2 mt-2">
           {["JavaScript", "TypeScript", "React", "Next.js", "Node.js", "Three.js"].map((s) => (
-            <span key={s} className="px-1 bg-yellow-100 border border-gray-400 text-xs">
+            <span key={s} className="px-2 py-0.5 bg-yellow-100 border border-gray-400 text-sm">
               {s}
             </span>
           ))}
@@ -157,7 +157,7 @@ function AboutSection() {
 
       <div>
         <span className="font-bold">Contact:</span>
-        <div className="mt-1 text-gray-600">
+        <div className="mt-2 text-gray-600 space-y-1">
           <div>Email: developer@example.com</div>
           <div>GitHub: github.com/developer</div>
           <div>Location: Poland</div>
@@ -176,17 +176,17 @@ function ProjectsSection() {
   ];
 
   return (
-    <div className="text-xs leading-tight">
-      <h2 className="font-bold text-sm mb-2 border-b border-gray-300 pb-1">Projects</h2>
+    <div className="text-sm leading-relaxed">
+      <h2 className="font-bold text-lg mb-3 border-b border-gray-300 pb-2">Projects</h2>
       
-      <div className="space-y-2">
+      <div className="space-y-3">
         {projects.map((p, i) => (
-          <div key={i} className="p-1 bg-gray-100 border border-gray-400">
-            <div className="flex justify-between">
+          <div key={i} className="p-2 bg-gray-100 border border-gray-400">
+            <div className="flex justify-between items-center">
               <span className="font-bold">{p.name}</span>
               <span className="text-gray-500">{p.year}</span>
             </div>
-            <p className="text-gray-600">{p.desc}</p>
+            <p className="text-gray-600 mt-1">{p.desc}</p>
           </div>
         ))}
       </div>
@@ -202,12 +202,12 @@ function ExperienceSection() {
   ];
 
   return (
-    <div className="text-xs leading-tight">
-      <h2 className="font-bold text-sm mb-2 border-b border-gray-300 pb-1">Experience</h2>
+    <div className="text-sm leading-relaxed">
+      <h2 className="font-bold text-lg mb-3 border-b border-gray-300 pb-2">Experience</h2>
       
-      <div className="space-y-2">
+      <div className="space-y-3">
         {experiences.map((e, i) => (
-          <div key={i} className={`p-1 border border-gray-400 ${i === 0 ? "bg-yellow-50" : "bg-gray-100"}`}>
+          <div key={i} className={`p-2 border border-gray-400 ${i === 0 ? "bg-yellow-50" : "bg-gray-100"}`}>
             <div className="font-bold">{e.title}</div>
             <div className="text-blue-800">{e.company}</div>
             <div className="text-gray-500">{e.period}</div>
@@ -215,7 +215,7 @@ function ExperienceSection() {
         ))}
       </div>
 
-      <div className="mt-2 p-1 bg-gray-200 border border-gray-400">
+      <div className="mt-3 p-2 bg-gray-200 border border-gray-400">
         <div className="font-bold">Education</div>
         <div>Computer Science, B.Sc. - University of Technology, 2018</div>
       </div>
